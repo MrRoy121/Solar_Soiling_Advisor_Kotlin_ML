@@ -27,6 +27,7 @@ data class SoilingResult(
     val classIndex: Int,
     val probabilities: List<Float>,
     val dirtinessFraction: Float,
+    val isPanel: Boolean = true,
 )
 
 /**
@@ -51,6 +52,7 @@ class SoilingClassifier(
     private val inputSize: Int
     private val outputCount: Int
     private val cleanIndex: Int
+    private val notPanelIndex: Int
     private val imageProcessor: ImageProcessor
 
     init {
@@ -68,6 +70,8 @@ class SoilingClassifier(
 
         // For multi-class dirtiness = 1 - P(Clean), so we need the "Clean" index.
         cleanIndex = labels.indexOfFirst { it.trim().equals("clean", ignoreCase = true) }
+        // For the "is this a solar panel?" filter, we need the "NotPanel" index.
+        notPanelIndex = labels.indexOfFirst { it.trim().equals("notpanel", ignoreCase = true) }
 
         imageProcessor = ImageProcessor.Builder()
             .add(ResizeOp(inputSize, inputSize, ResizeOp.ResizeMethod.BILINEAR))
@@ -106,6 +110,7 @@ class SoilingClassifier(
             classIndex = index,
             probabilities = probs.toList(),
             dirtinessFraction = dirtiness,
+            isPanel = (notPanelIndex < 0) || (index != notPanelIndex),
         )
     }
 

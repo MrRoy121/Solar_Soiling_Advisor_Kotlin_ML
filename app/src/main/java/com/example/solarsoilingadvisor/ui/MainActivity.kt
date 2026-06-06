@@ -78,6 +78,11 @@ private enum class DirtLevel(
     val color: Color,
     val container: Color,
 ) {
+    NOT_PANEL(
+        "Not a solar panel", "We need a clearer photo",
+        "This doesn't look like a solar panel. Try a clear, head-on photo of your panel in daylight — the panel should fill most of the frame.",
+        Color(0xFF424242), Color(0xFFE0E0E0),
+    ),
     CLEAN(
         "Looks clean", "No cleaning needed",
         "Your panels look clean — nothing to do right now.",
@@ -265,14 +270,16 @@ private fun EmptyState() {
 
 @Composable
 private fun ResultSection(result: SoilingResult) {
-    val level = levelFor(result.dirtinessFraction)
+    val level = if (!result.isPanel) DirtLevel.NOT_PANEL else levelFor(result.dirtinessFraction)
 
     // How dirty does it look?
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
         Column(Modifier.padding(20.dp)) {
             StatusPill(level)
-            Spacer(Modifier.height(16.dp))
-            DirtinessMeter(dirtinessFraction = result.dirtinessFraction)
+            if (result.isPanel) {
+                Spacer(Modifier.height(16.dp))
+                DirtinessMeter(dirtinessFraction = result.dirtinessFraction)
+            }
         }
     }
     Spacer(Modifier.height(14.dp))
